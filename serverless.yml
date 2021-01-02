@@ -1,0 +1,28 @@
+service: skills-uploader
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: prod
+  region: us-east-2
+
+functions:
+  marco:
+    handler: handler.marco
+    events:
+      - http:
+          path: /
+          method: get
+  uploadSkill:
+    handler: handler.uploadSkill
+    events:
+      - http:
+          path: /
+          method: post
+
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-plugin-typescript
+  - serverless-offline
