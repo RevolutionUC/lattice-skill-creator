@@ -2,37 +2,45 @@ import { APIGatewayEvent, Handler } from 'aws-lambda';
 import parseCsv from './functions/parse-csv';
 import generateInitialsUrl from './functions/generate-initials-url';
 import createSkills from './functions/create-skills';
+import downloadImage from './functions/download-image';
+import resizeImage from './functions/resize-image';
+import uploadImageToS3 from './functions/upload-image';
 
 export const uploadSkill: Handler = async (e: APIGatewayEvent) => {
-  // get the csv string from http event data
+  // Get the csv string from http event data
   const csv = ``;
 
-  // parse csv to get each skill title and image url
+  // Parse csv to get each skill title and image url
   const skills = parseCsv(csv);
 
-  // for each csv entry:
-  const uploadData = await Promise.all(skills.map(skill => {
-    // if image url is missing, use generate-initials-url
+  // For each csv entry:
+  const uploadData = await Promise.all(skills.map(async skill => {
+    // If image url is missing, use generate-initials-url
     if(!skill.icon) {
       skill.icon = generateInitialsUrl(skill.title);
     }
 
-    // download skill.icon image
+    // Download skill.icon image
+    const iconPath = await downloadImage(skill.icon);
 
-    // if image is not svg, resize it to 64x64
+    // If image is not svg, resize it to 64x64
+    if(iconPath.toLowerCase().split('.').pop() != 'svg') {
+      await resizeImage(iconPath);
+    }
 
-    // upload the image to s3
+    // Upload the image to S3
+    const remoteName = await uploadImageToS3(iconPath);
 
-    // get s3 uploaded image url
+    // Get S3 uploaded image url
     skill.icon = `<url of the image on s3>`;
 
     return skill;
   }));
 
-  // send skills data to revolutionuc-api
+  // Send skills data to revolutionuc-api
   await createSkills(uploadData);
 
-  // return 201
+  // Return 201
   return { statusCode: 201, body: `Uploaded skills successfully` };
 };
 
