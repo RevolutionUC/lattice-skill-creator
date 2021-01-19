@@ -1,29 +1,24 @@
-import S3 from 'aws-s3';
+import * as fs from 'fs';
+import { S3 } from 'aws-sdk';
+import { SkillDto } from '../interfaces';
  
-const config = {
-    bucketName: 'myBucket',
-    dirName: 'icons',
-    region: 'eu-west-1',
-    accessKeyId: 'keyId',
-    secretAccessKey: 'secret',
-    s3Url: 'https://my-s3-url.com/',
-}
- 
-const S3Client = new S3(config);
- 
-export default (iconPath: string) => {
-  const newName = 'filename';
+const s3 = new S3({ region: `us-east-1` });
+
+export default async (skill: SkillDto) => {
+  try {
+    const file = fs.createReadStream(`./${skill.icon}`);
   
-  S3Client
-      .uploadFile(iconPath, newName)
-      .then(data => console.log(data))
-      .catch(err => console.error(err))
+    const { Location } = await s3.upload({
+      Bucket: `revolutionuc-assets-lattice-test`,
+      Key: `${skill.icon.split(`/`).pop()}`,
+      Body: file
+    }).promise();
+
+    // console.log({ Location });
   
-    /* {
-      Response: {
-        bucket: "bucket-name",
-        key: "icons/icon.svg",
-        location: "https://bucket.s3.amazonaws.com/icons/icon.svg"
-      }
-    } */
+    return Location;
+  } catch (err) {
+    console.log(`could not read file`)
+    console.error(err);
+  }
 };

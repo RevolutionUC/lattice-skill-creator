@@ -11,3 +11,6 @@ log
 sample
 ngrok.exe
 .env
+
+icons/*
+!icons/readme.md
