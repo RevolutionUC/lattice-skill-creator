@@ -1,0 +1,20 @@
+language: node_js
+
+node_js:
+  - 12
+
+install: npm install
+
+if: branch = master AND type = push
+
+script: npm run deploy
+
+notifications:
+  webhooks:
+    urls:
+      - https://logs.revolutionuc.com/post?service=travis
+    on_success: always
+    on_failure: always
+    on_start:   always
+    on_cancel:  always
+    on_error:   always
