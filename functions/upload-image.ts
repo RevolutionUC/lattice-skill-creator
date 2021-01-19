@@ -6,7 +6,7 @@ const s3 = new S3({ region: `us-east-1` });
 
 export default async (skill: SkillDto) => {
   try {
-    const file = fs.createReadStream(`./${skill.icon}`);
+    const file = fs.createReadStream(skill.icon);
   
     const { Location } = await s3.upload({
       Bucket: `revolutionuc-assets-lattice-test`,

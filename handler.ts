@@ -5,6 +5,7 @@ import createSkills from './functions/create-skills';
 import downloadImage from './functions/download-image';
 import resizeImage from './functions/resize-image';
 import uploadImage from './functions/upload-image';
+import cleanup from './functions/cleanup';
 
 export const uploadSkill: Handler = async (e: APIGatewayEvent) => {
   // Get the csv string from http event data
@@ -22,18 +23,20 @@ export const uploadSkill: Handler = async (e: APIGatewayEvent) => {
       }
   
       // Download skill.icon image
-      const iconPath = await downloadImage(skill);
+      const localImagePath = await downloadImage(skill);
   
       // If image is not svg, resize it to 64x64
-      if(iconPath.toLowerCase().split('.').pop() != 'svg') {
-        await resizeImage(iconPath);
+      if(localImagePath.toLowerCase().split('.').pop() != 'svg') {
+        await resizeImage(localImagePath);
       }
   
       // Upload the image to S3
-      const remoteName = await uploadImage({ icon: iconPath, title: skill.title });
+      const remoteImagePath = await uploadImage({ icon: localImagePath, title: skill.title });
   
       // Get S3 uploaded image url
-      skill.icon = remoteName;
+      skill.icon = remoteImagePath;
+
+      await cleanup(localImagePath);
   
       return skill;
     }));
