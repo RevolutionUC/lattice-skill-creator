@@ -14,7 +14,6 @@ export default async (skill: SkillDto) => {
       Body: file
     }).promise();
 
-    // console.log({ Location });
   
     return Location;
   } catch (err) {
